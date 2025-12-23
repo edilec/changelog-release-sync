@@ -1,0 +1,17 @@
+{
+  "name": "changelog-release-sync",
+  "version": "0.0.0",
+  "description": "Compare changelog versions with release tags and package metadata.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/edilec/changelog-release-sync"
+  }
+}
