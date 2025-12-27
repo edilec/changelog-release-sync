@@ -64,6 +64,14 @@ test('invalid tag or heading evidence is incomplete rather than compared from a 
   assert.deepEqual(rules(auditReleases(badHeading)), ['entry-invalid']);
 });
 
+test('explicitly partial tag export cannot pass', () => {
+  const input = good(); input.tagsExport.complete = false;
+  const result = auditReleases(input);
+  assert.equal(result.status, 'incomplete');
+  assert.deepEqual(rules(result), ['tag-export-incomplete']);
+  assert.equal(result.summary.checked, 0);
+});
+
 test('empty tag export can describe an unpublished local release', () => {
   const input = good(); input.tagsExport.tags = []; input.changelog = '## [1.2.0]\nLocal only.\n';
   const result = auditReleases(input);

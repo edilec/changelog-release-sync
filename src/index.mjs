@@ -2,13 +2,13 @@ export const TOOL_ID = 'changelog-release-sync';
 export const LIMITS = Object.freeze({ bytes: 1_048_576, records: 1000, depth: 16, milliseconds: 5000 });
 export const RULE_SEVERITY = Object.freeze({
   'input-unreadable': 'error', 'byte-limit': 'error', 'depth-limit': 'error', 'time-limit': 'error',
-  'record-limit': 'error', 'package-invalid': 'error', 'tag-export-invalid': 'error',
+  'record-limit': 'error', 'package-invalid': 'error', 'tag-export-invalid': 'error', 'tag-export-incomplete': 'error',
   'tag-invalid': 'error', 'entry-invalid': 'error', 'tag-duplicate': 'error',
   'entry-duplicate': 'error', 'tag-entry-missing': 'error', 'entry-tag-missing': 'error',
   'package-entry-missing': 'error', 'package-tag-missing': 'error', 'package-version-behind': 'error',
   'entry-version-ahead': 'error', 'local-unpublished': 'info'
 });
-const INCOMPLETE = new Set(['input-unreadable', 'byte-limit', 'depth-limit', 'time-limit', 'record-limit', 'package-invalid', 'tag-export-invalid', 'tag-invalid', 'entry-invalid']);
+const INCOMPLETE = new Set(['input-unreadable', 'byte-limit', 'depth-limit', 'time-limit', 'record-limit', 'package-invalid', 'tag-export-invalid', 'tag-export-incomplete', 'tag-invalid', 'entry-invalid']);
 const object = x => x !== null && typeof x === 'object' && !Array.isArray(x);
 const cmp = (a, b) => a < b ? -1 : a > b ? 1 : 0;
 const VERSION = '(?:0|[1-9]\\d{0,8})\\.(?:0|[1-9]\\d{0,8})\\.(?:0|[1-9]\\d{0,8})';
@@ -45,6 +45,7 @@ export function auditReleases(input, { now = () => performance.now() } = {}) {
   const started = now();
   if (!object(input) || !object(input.packageMeta) || !parsedVersion(input.packageMeta.version)) return incomplete('package-invalid', '@package', 'Local package version must be a supported stable version.');
   if (!object(input.tagsExport) || input.tagsExport.schemaVersion !== '1' || !Array.isArray(input.tagsExport.tags)) return incomplete('tag-export-invalid', '@tags', 'A version 1 tag export with a tags array is required.');
+  if (Object.hasOwn(input.tagsExport, 'complete') && input.tagsExport.complete !== true) return incomplete('tag-export-incomplete', '@tags', 'Tag export explicitly declares incomplete evidence.');
   if (typeof input.changelog !== 'string') return incomplete('entry-invalid', '@changelog', 'Changelog Markdown is required.');
   if (tooDeep({ packageMeta: input.packageMeta, tagsExport: input.tagsExport })) return incomplete('depth-limit', '@package', 'JSON evidence exceeds nesting depth 16.');
   if (input.tagsExport.tags.length > LIMITS.records) return incomplete('record-limit', '@tags', 'Tag export exceeds 1000 tags.');

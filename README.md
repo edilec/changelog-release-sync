@@ -15,7 +15,7 @@ The examples exit `0` (matching), `1` (tag without entry), and `0` (local unpubl
 
 ## Input contract
 
-`--package` is a local `package.json` with a `version` string. `--tags` is a separately exported UTF-8 JSON snapshot, such as `{"schemaVersion":"1","tags":["v1.0.0"]}`. An empty `tags` array is valid evidence of no tags in that export. The tool does not run Git, fetch tags, or infer an absent tag. `--changelog` is UTF-8 Markdown with release headings exactly `## [1.2.3]`; `## [Unreleased]` is permitted. Other level-two headings are unsupported and make the report incomplete rather than silently disappearing. Arbitrary non-heading prose is ignored and never copied to output.
+`--package` is a local `package.json` with a `version` string. `--tags` is a separately exported UTF-8 JSON snapshot, such as `{"schemaVersion":"1","tags":["v1.0.0"]}`. An empty `tags` array is valid evidence of no tags in that export. Optional `complete` must be `true` if present; an explicit partial tag export never passes. The tool does not run Git, fetch tags, or infer an absent tag. `--changelog` is UTF-8 Markdown with release headings exactly `## [1.2.3]`; `## [Unreleased]` is permitted. Other level-two headings are unsupported and make the report incomplete rather than silently disappearing. Arbitrary non-heading prose is ignored and never copied to output.
 
 Only stable numeric `MAJOR.MINOR.PATCH` versions are supported, each component 0 to 999,999,999 without leading zeroes. Tags must be `v` plus that version; prerelease/build metadata and other tag schemes yield `incomplete` because this parser cannot safely compare them. Version order is numeric, not string order. JSON extra fields are ignored but count toward depth and byte limits.
 
@@ -33,6 +33,7 @@ The package version must have a changelog entry. Each tag must have one changelo
 | `tag-duplicate`, `entry-duplicate` | error | A release identity occurs more than once. |
 | `local-unpublished` | info | Current local version has an entry but no tag; no tag is inferred. |
 | `package-invalid`, `tag-export-invalid`, `tag-invalid`, `entry-invalid` | error, incomplete | Required or supported comparison evidence is absent. |
+| `tag-export-incomplete` | error, incomplete | Tag export explicitly marks its evidence as partial. |
 | `input-unreadable`, `byte-limit`, `depth-limit`, `record-limit`, `time-limit` | error, incomplete | Input cannot be evaluated within declared limits. |
 
 Exit `0` is `pass`, exit `1` is evaluated `fail`, and exit `2` is `incomplete` or an invalid invocation. Unknown options/configuration and output refusal leave stdout empty with a generic stderr diagnostic. Unreadable, undecodable, or unparseable input produces an `incomplete` JSON report. Reports follow the catalog v1 envelope. `@package`, `@tags`, and `@changelog` are fixed logical roles for the exact files named at invocation, not filesystem paths; `/tags/N` uses zero-based tag ordinal, and `line:N` is a one-based Markdown line reference. Reports never include package names, prose, or raw tag payload. Findings sort by `(location.file, location.pointer, ruleId)` in JavaScript code-unit order; identical inputs produce identical stdout.
