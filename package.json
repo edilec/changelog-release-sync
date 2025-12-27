@@ -1,13 +1,18 @@
 {
   "name": "changelog-release-sync",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Compare changelog versions with release tags and package metadata.",
   "type": "module",
+  "bin": {
+    "changelog-release-sync": "./bin/changelog-release-sync.mjs"
+  },
   "engines": {
     "node": ">=22"
   },
   "scripts": {
-    "test": "node --test"
+    "lint": "node --check src/index.mjs && node --check bin/changelog-release-sync.mjs",
+    "test": "node --test",
+    "check": "npm run lint && npm test"
   },
   "license": "MIT",
   "repository": {
