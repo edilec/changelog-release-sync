@@ -72,6 +72,14 @@ test('explicitly partial tag export cannot pass', () => {
   assert.equal(result.summary.checked, 0);
 });
 
+test('tab-delimited level-two release heading cannot be silently ignored', () => {
+  const input = { packageMeta: { version: '1.0.0' }, tagsExport: { schemaVersion: '1', tags: ['v1.0.0'] }, changelog: '## [1.0.0]\n##\t[1.1.0]\n' };
+  const result = auditReleases(input);
+  assert.equal(result.status, 'incomplete');
+  assert.deepEqual(rules(result), ['entry-invalid']);
+  assert.equal(result.findings[0].location.pointer, 'line:2');
+});
+
 test('empty tag export can describe an unpublished local release', () => {
   const input = good(); input.tagsExport.tags = []; input.changelog = '## [1.2.0]\nLocal only.\n';
   const result = auditReleases(input);

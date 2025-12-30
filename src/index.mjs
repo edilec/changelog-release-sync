@@ -52,7 +52,7 @@ export function auditReleases(input, { now = () => performance.now() } = {}) {
   const lines = input.changelog.split(/\r?\n/), headings = [], entries = new Map(), tags = new Map(), findings = [];
   for (const [i, line] of lines.entries()) {
     if (now() - started > LIMITS.milliseconds) return incomplete('time-limit', '@changelog', 'Evaluation exceeded 5000 milliseconds.');
-    if (!line.startsWith('## ')) continue;
+    if (!/^ {0,3}##(?:[ \t]|$)/.test(line)) continue;
     if (line === '## [Unreleased]') continue;
     const match = headingPattern.exec(line);
     if (!match) { finding(findings, 'entry-invalid', '@changelog', `line:${i + 1}`, 'Release heading is not a supported stable version.'); continue; }
