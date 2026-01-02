@@ -50,9 +50,22 @@ export function auditReleases(input, { now = () => performance.now() } = {}) {
   if (tooDeep({ packageMeta: input.packageMeta, tagsExport: input.tagsExport })) return incomplete('depth-limit', '@package', 'JSON evidence exceeds nesting depth 16.');
   if (input.tagsExport.tags.length > LIMITS.records) return incomplete('record-limit', '@tags', 'Tag export exceeds 1000 tags.');
   const lines = input.changelog.split(/\r?\n/), headings = [], entries = new Map(), tags = new Map(), findings = [];
+  let fence = null, comment = false;
   for (const [i, line] of lines.entries()) {
     if (now() - started > LIMITS.milliseconds) return incomplete('time-limit', '@changelog', 'Evaluation exceeded 5000 milliseconds.');
-    if (!/^ {0,3}##(?:[ \t]|$)/.test(line)) continue;
+    if (fence) {
+      const close = /^ {0,3}(`+|~+)[ \t]*$/.exec(line);
+      if (close && close[1][0] === fence.char && close[1].length >= fence.length) fence = null;
+      continue;
+    }
+    if (comment) { if (line.includes('-->')) comment = false; continue; }
+    const open = /^ {0,3}(`{3,}|~{3,})/.exec(line);
+    if (open) { fence = { char: open[1][0], length: open[1].length }; continue; }
+    if (!/^ {0,3}##(?:[ \t]|$)/.test(line)) {
+      const marker = line.indexOf('<!--');
+      if (marker >= 0 && line.indexOf('-->', marker + 4) < 0) comment = true;
+      continue;
+    }
     if (line === '## [Unreleased]') continue;
     const match = headingPattern.exec(line);
     if (!match) { finding(findings, 'entry-invalid', '@changelog', `line:${i + 1}`, 'Release heading is not a supported stable version.'); continue; }

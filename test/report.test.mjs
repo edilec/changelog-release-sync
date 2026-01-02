@@ -80,6 +80,15 @@ test('tab-delimited level-two release heading cannot be silently ignored', () =>
   assert.equal(result.findings[0].location.pointer, 'line:2');
 });
 
+test('release-like lines inside fenced code or HTML comments are not headings', () => {
+  for (const wrapper of [['```md', '```'], ['~~~md', '~~~'], ['<!--', '-->']]) {
+    const input = { packageMeta: { version: '1.0.0' }, tagsExport: { schemaVersion: '1', tags: ['v1.0.0'] }, changelog: `## [1.0.0]\n${wrapper[0]}\n## [1.0.0]\n${wrapper[1]}\n` };
+    const result = auditReleases(input);
+    assert.equal(result.status, 'pass', wrapper[0]);
+    assert.deepEqual(result.findings, []);
+  }
+});
+
 test('empty tag export can describe an unpublished local release', () => {
   const input = good(); input.tagsExport.tags = []; input.changelog = '## [1.2.0]\nLocal only.\n';
   const result = auditReleases(input);
