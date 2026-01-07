@@ -129,3 +129,11 @@ test('record, JSON depth, and injected time accept N and refuse N+1', () => {
   const late = [0, LIMITS.milliseconds + 1];
   assert.deepEqual(rules(auditReleases(good(), { now: () => late.shift() ?? LIMITS.milliseconds + 1 })), ['time-limit']);
 });
+
+test('evaluation checks time once more before reporting a clean comparison', () => {
+  let calls = 0;
+  const input = { packageMeta: { version: '1.0.0' }, tagsExport: { schemaVersion: '1', tags: ['v1.0.0'] }, changelog: '## [1.0.0]' };
+  const result = auditReleases(input, { now: () => calls++ < 3 ? 0 : LIMITS.milliseconds + 1 });
+  assert.equal(result.status, 'incomplete');
+  assert.deepEqual(rules(result), ['time-limit']);
+});

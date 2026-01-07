@@ -99,5 +99,6 @@ export function auditReleases(input, { now = () => performance.now() } = {}) {
     if (localIsAhead && entries.has(local)) finding(findings, 'local-unpublished', '@package', '/version', 'Current package version is local and unpublished; no tag was inferred.');
     else if (!localIsAhead) finding(findings, 'package-tag-missing', '@package', '/version', 'Local package version has no matching release tag.');
   }
+  if (now() - started > LIMITS.milliseconds) return incomplete('time-limit', '@changelog', 'Evaluation exceeded 5000 milliseconds.');
   return report(findings, 1 + tags.size + headings.length);
 }
