@@ -1,0 +1,22 @@
+{
+  "name": "changelog-release-sync",
+  "version": "1.0.0",
+  "description": "Compare changelog versions with release tags and package metadata.",
+  "type": "module",
+  "bin": {
+    "changelog-release-sync": "./bin/changelog-release-sync.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "lint": "node --check src/index.mjs && node --check bin/changelog-release-sync.mjs",
+    "test": "node --test",
+    "check": "npm run lint && npm test"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/edilec/changelog-release-sync"
+  }
+}
